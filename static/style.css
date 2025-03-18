@@ -1,0 +1,99 @@
+@keyframes gradientAnimation {
+    0% {
+        background-position: 0 50%;
+    }
+    25% {
+        background-position: 100% 50%;
+    }
+    50% {
+        background-position: 0 50%;
+    }
+    75% {
+        background-position: 100% 50%;
+    }
+    100% {
+        background-position: 0 50%;
+    }
+}
+
+body {
+    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    margin: 0;
+    padding-left: 300px;
+    background: linear-gradient(135deg, #2f50d5 0%, #1e7d80 50%, #9048d8 100%);
+    background-size: 200% 200%;
+    animation: gradientAnimation 5s ease infinite; /* Faster animation speed */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    color: #fff;
+    text-align: center;
+}
+
+.container {
+    background-color: rgba(255, 255, 255, 0.95);
+    padding: 40px;
+    border-radius: 12px;
+    box-shadow: 0 20px 35px rgba(0, 0, 0, 10);
+    width: 100%;
+    max-width: 450px;
+}
+
+h1 {
+    margin-bottom: 20px;
+    font-size: 24px;
+    color: #333;
+    text-decoration-style: dashed;
+}
+
+.form-group {
+    margin-bottom: 20px;
+    text-align: left;
+}
+
+label {
+    display: block;
+    margin-bottom: 10px;
+    font-size: 14px;
+    font-weight: bold;
+    color: #333;
+}
+
+input[type="file"] {
+    display: block;
+    width: 100%;
+    padding: 12px;
+    margin-top: 5px;
+    border-radius: 8px;
+    border: 2px solid #ddd;
+    background-color: #fff;
+    box-sizing: border-box;
+    box-shadow: 0 20px 35px rgba(0, 0, 0, 0.20);
+    cursor: pointer;
+    font-size: 16px;
+    color: #666;
+}
+
+button {
+    background-color: #50a353;
+    color: white;
+    border: none;
+    padding: 12px 20px;
+    font-size: 18px;
+    font-weight: bold;
+    border-radius: 8px;
+    cursor: pointer;
+    width: 100%;
+    box-shadow: 0 6px 10px rgba(0, 0, 0, 10);
+    transition: background-color 0.3s ease;
+    margin-top: 10px;
+}
+
+.buttons:hover {background-color: #3e8e41}
+
+.buttons:active {
+    background-color: #3e8e41;
+    box-shadow: 0 5px #166502;
+    transform: translateY(4px);
+}

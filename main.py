@@ -1,31 +1,80 @@
-from fastapi import FastAPI, File, UploadFile, HTTPException
-from fastapi.responses import FileResponse
+import io
+from fastapi import FastAPI, HTTPException, UploadFile, File
+from fastapi.responses import StreamingResponse
+from typing import List
+
+from starlette.responses import FileResponse
+
 from src.secret_santa_manager import process_employee_data, create_secret_santa_assignments, generate_csv_from_data
+from fastapi.staticfiles import StaticFiles
+import os
+from datetime import datetime
 
 app = FastAPI()
 
-@app.post("/upload/employee_list")
-async def upload_employee_list(file: UploadFile = File(...)):
-    if file.filename != 'Employee-List.csv' or file.content_type != 'text/csv':
-        raise HTTPException(status_code=400, detail="Please upload 'Employee-List.csv' as a CSV file.")
+# Define the base directory for the project
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
-    contents = await file.read()
-    try:
-        employees = process_employee_data(contents)
-        assignments = create_secret_santa_assignments(employees)
-        final_csv = generate_csv_from_data(assignments)
+# Directory where static files are stored
+static_dir = os.path.join(BASE_DIR, 'static')
 
-        file_path = "temp_secret_santa.csv"
-        with open(file_path, 'w', encoding='utf-8') as f:
-            f.write(final_csv)
+# Serve static files from the '/static' directory
+app.mount("/static", StaticFiles(directory=static_dir), name="static")
 
-        return FileResponse(path=file_path, filename="secret_santa_assignments.csv", media_type='text/csv')
-    except Exception as e:
-        raise HTTPException(status_code=400, detail=str(e))
-
+# Route to serve index.html at "/"
 @app.get("/")
-def read_root():
-    return {"message": "Welcome to the Secret Santa Game"}
+async def serve_ui():
+    return FileResponse(os.path.join(static_dir, "index.html"))
+
+
+@app.post("/upload/employee_list")
+async def upload_employee_list(files: List[UploadFile] = File(...)):
+    """
+    Endpoint to upload employee CSV files and generate Secret Santa assignments.
+    Accepts one file for current year employees and optionally another for last year's results.
+    """
+    employee_data_file = None
+    previous_year_data_file = None
+
+    # Determine the role of each uploaded file based on filename
+    for file in files:
+        if 'Employee-List.csv' in file.filename:
+            employee_data_file = file  # Current year employee data
+        elif 'Secret-Santa-Game-Result' in file.filename:
+            previous_year_data_file = file  # Previous year results
+
+    # Validate the presence of the current year employee data
+    if not employee_data_file:
+        raise HTTPException(status_code=400, detail="The current employee list must be provided.")
+
+    # If the previous year data file is not provided, treat previous employees as an empty list
+    if not previous_year_data_file:
+        previous_employees = []
+    else:
+        previous_results_contents = await previous_year_data_file.read()
+        previous_employees = process_employee_data(previous_results_contents)
+
+    # Read the contents of the current year file
+    current_employee_contents = await employee_data_file.read()
+    try:
+        # Process data into structured records
+        current_employees = process_employee_data(current_employee_contents)
+
+        # Generate Secret Santa assignments based on the current and previous data
+        secret_santa_assignments = create_secret_santa_assignments(current_employees, previous_employees)
+
+        # Prepare CSV data from the assignments
+        current_year = datetime.now().year
+        filename = f"Secret-Santa-Result-{current_year}.csv"
+        csv_data = generate_csv_from_data(secret_santa_assignments)
+        headers = {"Content-Disposition": f"attachment; filename={filename}"}
+
+        # Stream the CSV data as a response
+        return StreamingResponse(io.StringIO(csv_data), media_type="text/csv", headers=headers)
+    except Exception as e:
+        # Handle exceptions with a generic server error message
+        raise HTTPException(status_code=500, detail=f"Failed to process data and generate CSV: {e}")
+
 
 if __name__ == "__main__":
     import uvicorn

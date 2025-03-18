@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Secret Santa System</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+<div class="container">
+    <h1>Welcome to Secret Santa Organizer !!</h1>
+    </br>
+    <form id="upload-form" action="/upload/employee_list" method="post" enctype="multipart/form-data">
+        <div class="form-group">
+            <label for="employee-list">Employee List:</label>
+            <input type="file" id="employee-list" name="files" required placeholder="Select employee list file">
+        </div>
+        <div class="form-group">
+            <label for="previous-results">Previous Year Secret Santa Result:</label>
+            <input type="file" id="previous-results" name="files" required placeholder="Select previous year result file">
+        </div>
+        <button type="submit">Generate Secret Santa Results..</button>
+    </form>
+</div>
+<script src="/static/script.js"></script>
+</body>
+</html>
